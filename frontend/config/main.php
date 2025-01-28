@@ -41,6 +41,11 @@ return [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
+                'my-account' => 'site/my-account',
+                'chat' => 'site/chat',
+                'favourites' => 'site/favourites',
+                'notifications' => 'site/notifications',
+                'create-listing' => 'site/create-listing',
             ],
         ],
 

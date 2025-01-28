@@ -41,6 +41,12 @@ AppAsset::register($this);
     ];
     if (Yii::$app->user->isGuest) {
         $menuItems[] = ['label' => 'Signup', 'url' => ['/site/signup']];
+    } else {
+        $menuItems[] = ['label' => 'My Account', 'url' => ['/site/my-account']];
+        $menuItems[] = ['label' => 'Chat', 'url' => ['/site/chat']];
+        $menuItems[] = ['label' => 'Favourites', 'url' => ['/site/favourites']];
+        $menuItems[] = ['label' => 'Notifications', 'url' => ['/site/notifications']];
+        $menuItems[] = ['label' => 'Create Listing', 'url' => ['/site/create-listing'], 'linkOptions' => ['class' => 'bg-white text-dark']];
     }
 
     echo Nav::widget([
@@ -81,4 +87,4 @@ AppAsset::register($this);
 <?php $this->endBody() ?>
 </body>
 </html>
-<?php $this->endPage();
+<?php $this->endPage() ?>

@@ -15,6 +15,8 @@ use frontend\models\PasswordResetRequestForm;
 use frontend\models\ResetPasswordForm;
 use frontend\models\SignupForm;
 use frontend\models\ContactForm;
+use frontend\models\MyAccountForm;
+use frontend\models\CreateListingForm;
 
 /**
  * Site controller
@@ -254,6 +256,72 @@ class SiteController extends Controller
 
         return $this->render('resendVerificationEmail', [
             'model' => $model
+        ]);
+    }
+
+    /**
+     * Displays MyAccount page.
+     *
+     * @return mixed
+     */
+    public function actionMyAccount()
+    {
+        $model = new MyAccountForm();
+        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+            Yii::$app->session->setFlash('success', 'Account details updated successfully.');
+            return $this->refresh();
+        }
+
+        return $this->render('myAccount', [
+            'model' => $model,
+        ]);
+    }
+
+    /**
+     * Displays Chat page.
+     *
+     * @return mixed
+     */
+    public function actionChat()
+    {
+        return $this->render('chat');
+    }
+
+    /**
+     * Displays Favourites page.
+     *
+     * @return mixed
+     */
+    public function actionFavourites()
+    {
+        return $this->render('favourites');
+    }
+
+    /**
+     * Displays Notifications page.
+     *
+     * @return mixed
+     */
+    public function actionNotifications()
+    {
+        return $this->render('notifications');
+    }
+
+    /**
+     * Displays Create Listing page.
+     *
+     * @return mixed
+     */
+    public function actionCreateListing()
+    {
+        $model = new CreateListingForm();
+        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+            Yii::$app->session->setFlash('success', 'Listing created successfully.');
+            return $this->refresh();
+        }
+
+        return $this->render('createListing', [
+            'model' => $model,
         ]);
     }
 }
