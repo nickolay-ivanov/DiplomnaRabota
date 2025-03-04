@@ -17,6 +17,7 @@ use frontend\models\SignupForm;
 use frontend\models\ContactForm;
 use frontend\models\MyAccountForm;
 use frontend\models\CreateListingForm;
+use common\models\Category;
 
 /**
  * Site controller
@@ -315,13 +316,33 @@ class SiteController extends Controller
     public function actionCreateListing()
     {
         $model = new CreateListingForm();
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            Yii::$app->session->setFlash('success', 'Listing created successfully.');
-            return $this->refresh();
+        
+        // Fetch and sort categories
+        $categories = Category::find()
+            ->select(['id', 'name'])
+            ->orderBy(['name' => SORT_ASC])
+            ->asArray()
+            ->all();
+
+        // Move "Other" category to the end
+        $categories = array_column($categories, 'name', 'id');
+        if (($otherKey = array_search('Other', $categories)) !== false) {
+            $otherCategory = $categories[$otherKey];
+            unset($categories[$otherKey]);
+            $categories[$otherKey] = $otherCategory;
+        }
+
+        if ($model->load(Yii::$app->request->post())) {
+            $filePath = $model->save();
+            if ($filePath !== false) {
+                Yii::$app->session->setFlash('success', 'Listing created successfully.');
+                return $this->refresh();
+            }
         }
 
         return $this->render('createListing', [
             'model' => $model,
+            'categories' => $categories,
         ]);
     }
 }
