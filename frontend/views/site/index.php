@@ -1,101 +1,97 @@
 <?php
 
 /** @var yii\web\View $this */
+/** @var frontend\models\SearchForm $searchModel */
+/** @var common\models\BookCopy[] $latestListings */
+
+use yii\helpers\Html;
+use yii\widgets\ActiveForm;
 
 $this->title = 'BookStore';
 ?>
 <div class="site-index">
-    <div class="p-5 mb-4 bg-transparent rounded-3">
-        <div class="container-fluid py-5 text-center">
-            <h1 class="display-4">Welcome to BookStore!</h1>
-            <p class="fs-5 fw-light">Your one-stop shop for buying and selling books online.</p>
-        </div>
+
+    <div class="jumbotron">
+        <h1>Welcome to BookStore!</h1>
+        <p class="lead">Find your favorite books or list your own.</p>
     </div>
 
-    <div class="container">
-        <div class="row mb-4">
-            <div class="col-md-12">
-                <form class="d-flex">
-                    <input class="form-control me-2" type="search" placeholder="Search for books, authors, or categories" aria-label="Search">
-                    <button class="btn btn-outline-success" type="submit">Search</button>
-                </form>
-            </div>
-        </div>
-
-        <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="#">BookStore</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="#">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Categories</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Trending</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Wishlist</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Sell a Book</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
+    <div class="body-content">
 
         <div class="row">
             <div class="col-lg-12">
-                <h2>Trending Books</h2>
-                <div class="row">
-                    <div class="col-lg-3">
-                        <div class="card">
-                            <img src="path/to/book1.jpg" class="card-img-top" alt="Book 1">
-                            <div class="card-body">
-                                <h5 class="card-title">Book Title 1</h5>
-                                <p class="card-text">Author 1</p>
-                                <a href="#" class="btn btn-primary">View Details</a>
-                            </div>
+                <?php $form = ActiveForm::begin([
+                    'action' => ['search'],
+                    'method' => 'get',
+                ]); ?>
+
+                <?= $form->field($searchModel, 'query')->textInput(['placeholder' => 'Search by author or book name'])->label(false) ?>
+
+                <div class="form-group">
+                    <?= Html::submitButton('Search', ['class' => 'btn btn-primary']) ?>
+                </div>
+
+                <?php ActiveForm::end(); ?>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <h2>Latest Listings</h2>
+                <div class="latest-listings-box">
+                    <?php foreach ($latestListings as $listing): ?>
+                        <div class="listing-item">
+                            <h3><?= Html::encode($listing->book->title) ?></h3>
+                            <p>
+                                <img src="<?= Yii::getAlias('@web') . '/' . ($listing->image ? $listing->image : 'uploads/default.jpg') ?>" class="img-responsive img-fixed-size" alt="<?= Html::encode($listing->book->title) ?>">
+                            </p>
+                            <p>Author: <?= Html::encode($listing->book->author) ?></p>
+                            <p class="listing-footer">
+                                <a class="btn btn-default" href="#">View &raquo;</a>
+                                <span class="price"><?= Html::encode($listing->price) ?> BGN</span>
+                            </p>
                         </div>
-                    </div>
-                    <div class="col-lg-3">
-                        <div class="card">
-                            <img src="path/to/book2.jpg" class="card-img-top" alt="Book 2">
-                            <div class="card-body">
-                                <h5 class="card-title">Book Title 2</h5>
-                                <p class="card-text">Author 2</p>
-                                <a href="#" class="btn btn-primary">View Details</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3">
-                        <div class="card">
-                            <img src="path/to/book3.jpg" class="card-img-top" alt="Book 3">
-                            <div class="card-body">
-                                <h5 class="card-title">Book Title 3</h5>
-                                <p class="card-text">Author 3</p>
-                                <a href="#" class="btn btn-primary">View Details</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3">
-                        <div class="card">
-                            <img src="path/to/book4.jpg" class="card-img-top" alt="Book 4">
-                            <div class="card-body">
-                                <h5 class="card-title">Book Title 4</h5>
-                                <p class="card-text">Author 4</p>
-                                <a href="#" class="btn btn-primary">View Details</a>
-                            </div>
-                        </div>
-                    </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </div>
+
     </div>
 </div>
+
+<style>
+.latest-listings-box {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(3, auto);
+    gap: 20px;
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-top: 20px;
+    background-color: #f9f9f9;
+}
+
+.listing-item {
+    border: 1px solid #ddd;
+    padding: 10px;
+    background-color: #fff;
+    text-align: center;
+}
+
+.img-fixed-size {
+    width: 200px;
+    height: 250px;
+    object-fit: cover;
+}
+
+.listing-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.price {
+    font-weight: bold;
+    color: #333;
+}
+</style>

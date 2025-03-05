@@ -22,4 +22,13 @@ class BookCopy extends ActiveRecord
             [['created_at', 'updated_at'], 'safe'],
         ];
     }
+
+    /**
+     * Gets the related Book model.
+     * @return \yii\db\ActiveQuery
+     */
+    public function getBook()
+    {
+        return $this->hasOne(Book::class, ['id' => 'book_id']);
+    }
 }

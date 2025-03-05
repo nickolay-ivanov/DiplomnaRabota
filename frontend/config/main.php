@@ -48,7 +48,15 @@ return [
                 'create-listing' => 'site/create-listing',
             ],
         ],
-
+        'assetManager' => [
+            'basePath' => '@webroot/assets',
+            'baseUrl' => '@web/assets',
+        ],
+        'fileStorage' => [
+            'class' => 'yii\base\Component',
+            'basePath' => '@webroot/uploads',
+            'baseUrl' => '@web/uploads',
+        ],
     ],
     'params' => $params,
 ];

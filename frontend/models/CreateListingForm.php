@@ -61,6 +61,9 @@ class CreateListingForm extends Model
             $bookCopy->price = $this->price;
             $bookCopy->book_condition = strtolower($this->condition);
 
+            // Set uploads directory
+            $uploadsDir = Yii::getAlias('@frontend/web/uploads');
+
             $filePath = null;
             $this->image = \yii\web\UploadedFile::getInstance($this, 'image');
             if ($this->image) {

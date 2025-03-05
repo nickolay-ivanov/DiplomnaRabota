@@ -18,6 +18,8 @@ use frontend\models\ContactForm;
 use frontend\models\MyAccountForm;
 use frontend\models\CreateListingForm;
 use common\models\Category;
+use frontend\models\SearchForm;
+use common\models\BookCopy;
 
 /**
  * Site controller
@@ -78,7 +80,16 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+        $searchModel = new SearchForm();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+
+        $latestListings = BookCopy::find()->orderBy(['created_at' => SORT_DESC])->limit(10)->all();
+
+        return $this->render('index', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+            'latestListings' => $latestListings,
+        ]);
     }
 
     /**
