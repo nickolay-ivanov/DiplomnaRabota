@@ -356,4 +356,32 @@ class SiteController extends Controller
             'categories' => $categories,
         ]);
     }
+
+    /**
+     * Displays a single listing.
+     *
+     * @param int|null $id
+     * @return mixed
+     * @throws \yii\web\NotFoundHttpException if the model cannot be found
+     */
+    public function actionListing($id = null)
+    {
+        if ($id === null || $id == 0) {
+            $model = new BookCopy();
+            $model->book = new \common\models\Book();
+            $model->book->title = 'Sample Title';
+            $model->book->author = 'Sample Author';
+            $model->price = 0.00;
+            $model->image = 'uploads/default.jpg';
+        } else {
+            $model = BookCopy::findOne($id);
+            if (!$model) {
+                throw new \yii\web\NotFoundHttpException('The requested page does not exist.');
+            }
+        }
+
+        return $this->render('view_listing', [
+            'model' => $model,
+        ]);
+    }
 }
