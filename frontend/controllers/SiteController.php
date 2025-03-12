@@ -20,6 +20,7 @@ use frontend\models\CreateListingForm;
 use common\models\Category;
 use frontend\models\SearchForm;
 use common\models\BookCopy;
+use common\models\User;
 
 /**
  * Site controller
@@ -382,6 +383,27 @@ class SiteController extends Controller
 
         return $this->render('view_listing', [
             'model' => $model,
+        ]);
+    }
+
+    /**
+     * Displays User Listings page.
+     *
+     * @param string $username
+     * @return mixed
+     */
+    public function actionUserListings($username)
+    {
+        $user = User::findOne(['username' => $username]);
+        if (!$user) {
+            throw new \yii\web\NotFoundHttpException('The requested user does not exist.');
+        }
+
+        $listings = BookCopy::find()->where(['seller_id' => $user->id])->orderBy(['created_at' => SORT_DESC])->all();
+
+        return $this->render('user_listings', [
+            'username' => $username,
+            'listings' => $listings,
         ]);
     }
 }

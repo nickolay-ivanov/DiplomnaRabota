@@ -45,6 +45,7 @@ $config = [
                 'listing/<id:\d+>' => 'site/listing',
                 'listing/0' => 'site/listing',
                 'listing' => 'site/listing',
+                'bookshelf/<username:\w+>' => 'site/user-listings',
             ],
         ],
     ],

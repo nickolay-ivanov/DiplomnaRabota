@@ -49,6 +49,7 @@ return [
                 'site/listing/<id:\d+>' => 'site/listing',
                 'listing/<id:\d+>' => 'site/listing',
                 'listing/0' => 'site/listing',
+                'bookshelf/<username:\w+>' => 'site/user-listings',
             ],
         ],
         'assetManager' => [
