@@ -280,6 +280,9 @@ class SiteController extends Controller
     public function actionMyAccount()
     {
         $model = new MyAccountForm();
+        $user = User::findOne(Yii::$app->user->id);
+        $model->loadUserData($user);
+
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             Yii::$app->session->setFlash('success', 'Account details updated successfully.');
             return $this->refresh();

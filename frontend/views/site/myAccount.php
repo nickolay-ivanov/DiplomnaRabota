@@ -19,6 +19,12 @@ $this->params['breadcrumbs'][] = $this->title;
         <div class="col-lg-5">
             <?php $form = ActiveForm::begin(['id' => 'my-account-form', 'options' => ['enctype' => 'multipart/form-data']]); ?>
 
+                <?php if ($model->profilePicture): ?>
+                    <div class="form-group">
+                        <img src="<?= Yii::getAlias('@web') . '/' . $model->profilePicture ?>" class="img-thumbnail" alt="Profile Picture">
+                    </div>
+                <?php endif; ?>
+
                 <?= $form->field($model, 'profilePicture')->fileInput() ?>
 
                 <?= $form->field($model, 'username')->textInput(['autofocus' => true]) ?>
@@ -26,12 +32,6 @@ $this->params['breadcrumbs'][] = $this->title;
                 <?= $form->field($model, 'email')->input('email') ?>
 
                 <?= $form->field($model, 'name')->textInput() ?>
-
-                <?= $form->field($model, 'bio')->textarea(['rows' => 6]) ?>
-
-                <?= $form->field($model, 'password')->passwordInput() ?>
-
-                <?= $form->field($model, 'confirmPassword')->passwordInput() ?>
 
                 <div class="form-group">
                     <?= Html::submitButton('Save', ['class' => 'btn btn-primary']) ?>

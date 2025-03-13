@@ -5,6 +5,7 @@ namespace frontend\models;
 use Yii;
 use yii\base\Model;
 use common\models\User;
+use yii\imagine\Image;
 
 class MyAccountForm extends Model
 {
@@ -12,19 +13,22 @@ class MyAccountForm extends Model
     public $username;
     public $email;
     public $name;
-    public $bio;
-    public $password;
-    public $confirmPassword;
 
     public function rules()
     {
         return [
-            [['username', 'email', 'name', 'bio'], 'string'],
+            [['username', 'email', 'name'], 'string'],
             [['email'], 'email'],
-            [['password', 'confirmPassword'], 'string', 'min' => 6],
-            [['confirmPassword'], 'compare', 'compareAttribute' => 'password'],
             [['profilePicture'], 'file', 'extensions' => 'png, jpg, jpeg'],
         ];
+    }
+
+    public function loadUserData($user)
+    {
+        $this->username = $user->username;
+        $this->email = $user->email;
+        $this->name = $user->name;
+        $this->profilePicture = $user->profile_picture;
     }
 
     public function save()
@@ -34,16 +38,23 @@ class MyAccountForm extends Model
             $user->username = $this->username;
             $user->email = $this->email;
             $user->name = $this->name;
-            $user->bio = $this->bio;
 
-            if ($this->password) {
-                $user->setPassword($this->password);
-            }
-
+            $this->profilePicture = \yii\web\UploadedFile::getInstance($this, 'profilePicture');
             if ($this->profilePicture) {
-                $filePath = 'uploads/' . $this->profilePicture->baseName . '.' . $this->profilePicture->extension;
-                $this->profilePicture->saveAs($filePath);
-                $user->profile_picture = $filePath;
+                $uploadsDir = Yii::getAlias('@frontend/web/uploads');
+                $filePath = $uploadsDir . '/' . uniqid() . '.' . $this->profilePicture->extension;
+                if (!$this->profilePicture->saveAs($filePath)) {
+                    Yii::$app->session->setFlash('error', 'Failed to upload profile picture.');
+                    return false;
+                }
+
+                // resize image
+                Image::thumbnail($filePath, 100, 100)
+                    ->save($filePath, ['quality' => 80]);
+
+                $user->profile_picture = 'uploads/' . basename($filePath);
+            } else {
+                Yii::info('No profile picture uploaded', __METHOD__);
             }
 
             return $user->save();

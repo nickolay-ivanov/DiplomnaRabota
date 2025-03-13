@@ -44,3 +44,4 @@ phpunit.phar
 
 # ignore uploads folder
 /uploads
+/uploads/
