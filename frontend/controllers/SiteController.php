@@ -409,4 +409,76 @@ class SiteController extends Controller
             'listings' => $listings,
         ]);
     }
+
+    /**
+     * Displays Edit Listing page.
+     *
+     * @param int $id
+     * @return mixed
+     * @throws \yii\web\NotFoundHttpException if the model cannot be found
+     * @throws \yii\web\ForbiddenHttpException if the user is not the seller
+     */
+    public function actionEditListing($id)
+    {
+        $model = BookCopy::findOne($id);
+        if (!$model) {
+            throw new \yii\web\NotFoundHttpException('The requested listing does not exist.');
+        }
+
+        if ($model->seller_id !== Yii::$app->user->id) {
+            throw new \yii\web\ForbiddenHttpException('You are not allowed to edit this listing.');
+        }
+
+        $formModel = new CreateListingForm();
+        $formModel->attributes = $model->attributes;
+        $formModel->category_id = $model->book->category_id; // Ensure category ID is set
+
+        if ($formModel->load(Yii::$app->request->post())) {
+            if ($formModel->validate()) {
+                $model->attributes = $formModel->attributes;
+                $model->book->title = $formModel->title;
+                $model->book->category_id = $formModel->category_id;
+                $model->book_condition = $formModel->condition;
+                $model->price = $formModel->price;
+
+                if ($formModel->image) {
+                    $uploadsDir = Yii::getAlias('@frontend/web/uploads');
+                    $filePath = $uploadsDir . '/' . uniqid() . '.' . $formModel->image->extension;
+                    if ($formModel->image->saveAs($filePath)) {
+                        $model->image = 'uploads/' . basename($filePath);
+                    } else {
+                        Yii::$app->session->setFlash('error', 'Failed to upload image.');
+                    }
+                }
+
+                if ($model->save() && $model->book->save()) {
+                    Yii::$app->session->setFlash('success', 'Listing updated successfully.');
+                    return $this->redirect(['view_listing', 'id' => $model->id]);
+                } else {
+                    Yii::$app->session->setFlash('error', 'Failed to update listing.');
+                }
+            }
+        }
+
+        // Fetch and sort categories
+        $categories = Category::find()
+            ->select(['id', 'name'])
+            ->orderBy(['name' => SORT_ASC])
+            ->asArray()
+            ->all();
+
+        // Move "Other" category to the end
+        $categories = array_column($categories, 'name', 'id');
+        if (($otherKey = array_search('Other', $categories)) !== false) {
+            $otherCategory = $categories[$otherKey];
+            unset($categories[$otherKey]);
+            $categories[$otherKey] = $otherCategory;
+        }
+
+        return $this->render('editListing', [
+            'model' => $formModel,
+            'categories' => $categories,
+            'listing' => $model,
+        ]);
+    }
 }
