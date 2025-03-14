@@ -51,6 +51,8 @@ return [
                 'listing/0' => 'site/listing',
                 'bookshelf/<username:\w+>' => 'site/user-listings',
                 'edit-listing/<id:\d+>' => 'site/edit-listing',
+                'start-chat/<username:\w+>' => 'site/start-chat',
+                'activities' => 'site/activities',
             ],
         ],
         'assetManager' => [

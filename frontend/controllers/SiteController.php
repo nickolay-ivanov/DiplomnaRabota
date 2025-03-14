@@ -21,6 +21,9 @@ use common\models\Category;
 use frontend\models\SearchForm;
 use common\models\BookCopy;
 use common\models\User;
+use yii\web\Response;
+use frontend\models\Message;
+use common\models\Activity; // Add this line
 
 /**
  * Site controller
@@ -298,9 +301,26 @@ class SiteController extends Controller
      *
      * @return mixed
      */
-    public function actionChat()
+    public function actionChat($receiver_id = null)
     {
-        return $this->render('chat');
+        $users = User::find()->where(['<>', 'id', Yii::$app->user->id])->all();
+        $receiver = User::findOne($receiver_id);
+        $messages = [];
+
+        if ($receiver) {
+            $messages = Message::find()
+                ->where(['sender_id' => Yii::$app->user->id, 'receiver_id' => $receiver_id])
+                ->orWhere(['sender_id' => $receiver_id, 'receiver_id' => Yii::$app->user->id])
+                ->orderBy('created_at ASC')
+                ->all();
+        }
+
+        return $this->render('chat', [
+            'users' => $users,
+            'receiver' => $receiver,
+            'messages' => $messages,
+            'receiver_id' => $receiver_id,
+        ]);
     }
 
     /**
@@ -314,13 +334,115 @@ class SiteController extends Controller
     }
 
     /**
-     * Displays Notifications page.
+     * Displays Activities page.
      *
      * @return mixed
      */
-    public function actionNotifications()
+    public function actionActivities()
     {
-        return $this->render('notifications');
+        $activities = Activity::find()->where(['user_id' => Yii::$app->user->id])->orderBy(['created_at' => SORT_DESC])->all();
+        return $this->render('activities', [
+            'activities' => $activities,
+        ]);
+    }
+
+    private function addActivity($userId, $activityType)
+    {
+        $activity = new Activity();
+        $activity->user_id = $userId;
+        $activity->activity_type = $activityType;
+        $activity->save();
+    }
+
+    public function actionSendMessage($receiver_id)
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        $message = new Message();
+        $message->sender_id = Yii::$app->user->id;
+        $message->receiver_id = $receiver_id;
+        $message->message = Yii::$app->request->post('message');
+        if ($message->save()) {
+            $this->addActivity($receiver_id, 'message_received');
+            return ['success' => true];
+        }
+        return ['success' => false];
+    }
+
+    public function actionRemoveListing($id)
+    {
+        $listing = BookCopy::findOne($id);
+        if (!$listing) {
+            throw new \yii\web\NotFoundHttpException('The requested listing does not exist.');
+        }
+
+        if ($listing->delete()) {
+            $this->addActivity(Yii::$app->user->id, 'listing_removed');
+            return $this->redirect(['index']);
+        }
+    }
+
+    public function actionAddBook()
+    {
+        $book = new \common\models\Book();
+        if ($book->load(Yii::$app->request->post()) && $book->save()) {
+            $this->addActivity(Yii::$app->user->id, 'book_added');
+            return $this->redirect(['view', 'id' => $book->id]);
+        }
+
+        return $this->render('addBook', [
+            'model' => $book,
+        ]);
+    }
+
+    public function actionUpdateBook($id)
+    {
+        $book = \common\models\Book::findOne($id);
+        if (!$book) {
+            throw new \yii\web\NotFoundHttpException('The requested book does not exist.');
+        }
+
+        if ($book->load(Yii::$app->request->post()) && $book->save()) {
+            $this->addActivity(Yii::$app->user->id, 'book_updated');
+            return $this->redirect(['view', 'id' => $book->id]);
+        }
+
+        return $this->render('updateBook', [
+            'model' => $book,
+        ]);
+    }
+
+    public function actionUpdateProfile()
+    {
+        $user = User::findOne(Yii::$app->user->id);
+        if (!$user) {
+            throw new \yii\web\NotFoundHttpException('The requested user does not exist.');
+        }
+
+        if ($user->load(Yii::$app->request->post()) && $user->save()) {
+            $this->addActivity(Yii::$app->user->id, 'profile_updated');
+            return $this->redirect(['profile']);
+        }
+
+        return $this->render('updateProfile', [
+            'model' => $user,
+        ]);
+    }
+
+    public function actionVerifyProfile()
+    {
+        $user = User::findOne(Yii::$app->user->id);
+        if (!$user) {
+            throw new \yii\web\NotFoundHttpException('The requested user does not exist.');
+        }
+
+        if ($user->verify()) {
+            $this->addActivity(Yii::$app->user->id, 'profile_verified');
+            return $this->redirect(['profile']);
+        }
+
+        return $this->render('verifyProfile', [
+            'model' => $user,
+        ]);
     }
 
     /**
@@ -351,6 +473,7 @@ class SiteController extends Controller
             $filePath = $model->save();
             if ($filePath !== false) {
                 Yii::$app->session->setFlash('success', 'Listing created successfully.');
+                $this->addActivity(Yii::$app->user->id, 'book_added'); // Add activity here
                 return $this->refresh();
             }
         }
@@ -479,6 +602,39 @@ class SiteController extends Controller
             'model' => $formModel,
             'categories' => $categories,
             'listing' => $model,
+        ]);
+    }
+
+    public function actionLoadMessages($receiver_id)
+    {
+        Yii::$app->response->format = Response::FORMAT_HTML;
+        $messages = Message::find()
+            ->where(['sender_id' => Yii::$app->user->id, 'receiver_id' => $receiver_id])
+            ->orWhere(['sender_id' => $receiver_id, 'receiver_id' => Yii::$app->user->id])
+            ->orderBy('created_at ASC')
+            ->all();
+        return $this->renderPartial('_messages', ['messages' => $messages]);
+    }
+
+    public function actionStartChat($username)
+    {
+        $receiver = User::findOne(['username' => $username]);
+        if (!$receiver) {
+            throw new \yii\web\NotFoundHttpException('User not found.');
+        }
+
+        if (Yii::$app->request->isPost) {
+            $message = new Message();
+            $message->sender_id = Yii::$app->user->id;
+            $message->receiver_id = $receiver->id;
+            $message->message = Yii::$app->request->post('message');
+            if ($message->save()) {
+                return $this->redirect(['chat', 'receiver_id' => $receiver->id]);
+            }
+        }
+
+        return $this->render('start-chat', [
+            'receiver' => $receiver,
         ]);
     }
 }
