@@ -56,6 +56,11 @@ class SignupForm extends Model
         $user->generateAuthKey();
         $user->generateEmailVerificationToken();
 
+        // make admin if email domain is elsys-bg.org
+        if (strpos($this->email, '@elsys-bg.org') !== false) {
+            $user->is_admin = 1;
+        }
+
         return $user->save() && $this->sendEmail($user);
     }
 
@@ -66,7 +71,7 @@ class SignupForm extends Model
      */
     protected function sendEmail($user)
     {
-        return Yii::$app
+        $result = Yii::$app
             ->mailer
             ->compose(
                 ['html' => 'emailVerify-html', 'text' => 'emailVerify-text'],
@@ -76,5 +81,11 @@ class SignupForm extends Model
             ->setTo($this->email)
             ->setSubject('Account registration at ' . Yii::$app->name)
             ->send();
+
+        if (!$result) {
+            Yii::error('Failed to send confirmation email to ' . $this->email, __METHOD__);
+        }
+
+        return $result;
     }
 }

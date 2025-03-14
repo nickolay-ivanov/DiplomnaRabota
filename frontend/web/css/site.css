@@ -147,3 +147,16 @@ a.desc:after {
     background-color: #286090;
     color: #fff;
 }
+
+.admin-actions {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.admin-listing-item {
+    position: relative;
+    border: 1px solid #ddd;
+    padding: 10px;
+    background-color: #f9f9f9;
+}

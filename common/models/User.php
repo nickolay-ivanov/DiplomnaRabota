@@ -22,6 +22,7 @@ use yii\web\IdentityInterface;
  * @property integer $created_at
  * @property integer $updated_at
  * @property string $password write-only password
+ * @property integer $is_admin
  */
 class User extends ActiveRecord implements IdentityInterface
 {
@@ -56,6 +57,8 @@ class User extends ActiveRecord implements IdentityInterface
         return [
             ['status', 'default', 'value' => self::STATUS_INACTIVE],
             ['status', 'in', 'range' => [self::STATUS_ACTIVE, self::STATUS_INACTIVE, self::STATUS_DELETED]],
+            ['is_admin', 'default', 'value' => 0],
+            ['is_admin', 'in', 'range' => [0, 1]],
         ];
     }
 
@@ -209,5 +212,10 @@ class User extends ActiveRecord implements IdentityInterface
     public function removePasswordResetToken()
     {
         $this->password_reset_token = null;
+    }
+
+    public function getIsAdmin()
+    {
+        return $this->is_admin == 1;
     }
 }

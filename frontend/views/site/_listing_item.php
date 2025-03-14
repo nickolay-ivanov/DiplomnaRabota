@@ -3,7 +3,6 @@
 /** @var common\models\BookCopy $model */
 
 use yii\helpers\Html;
-/**use Yii;*/
 ?>
 <div class="listing-item">
     <h3><?= Html::encode($model->book->title) ?></h3>

@@ -645,4 +645,30 @@ class SiteController extends Controller
             'receiver' => $receiver,
         ]);
     }
+
+    public function actionAdminPanel()
+    {
+        if (Yii::$app->user->isGuest || !Yii::$app->user->identity->isAdmin) {
+            throw new \yii\web\ForbiddenHttpException('You are not allowed to access this page.');
+        }
+
+        $listings = \common\models\BookCopy::find()->all();
+
+        return $this->render('admin_panel', [
+            'listings' => $listings,
+        ]);
+    }
+
+    public function actionDeleteListing($id)
+    {
+        $listing = \common\models\BookCopy::findOne($id);
+        if ($listing) {
+            $listing->delete();
+            Yii::$app->session->setFlash('success', 'Listing deleted successfully.');
+        } else {
+            Yii::$app->session->setFlash('error', 'Listing not found.');
+        }
+
+        return $this->redirect(['admin-panel']);
+    }
 }
