@@ -23,7 +23,8 @@ use common\models\BookCopy;
 use common\models\User;
 use yii\web\Response;
 use frontend\models\Message;
-use common\models\Activity; // Add this line
+use common\models\Activity;
+use common\models\Wishlist;
 
 /**
  * Site controller
@@ -330,7 +331,14 @@ class SiteController extends Controller
      */
     public function actionFavourites()
     {
-        return $this->render('favourites');
+        $listings = Wishlist::find()
+            ->where(['user_id' => Yii::$app->user->id])
+            ->orderBy(['added_at' => SORT_DESC])
+            ->all();
+
+        return $this->render('favourites', [
+            'listings' => $listings,
+        ]);
     }
 
     /**

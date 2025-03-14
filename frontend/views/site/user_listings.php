@@ -14,16 +14,8 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <div class="latest-listings-box">
         <?php foreach ($listings as $listing): ?>
-            <div class="listing-item">
-                <h3><?= Html::encode($listing->book->title) ?></h3>
-                <p>
-                    <img src="<?= Yii::getAlias('@web') . '/' . ($listing->image ? $listing->image : 'uploads/default.jpg') ?>" class="img-responsive img-fixed-size" alt="<?= Html::encode($listing->book->title) ?>">
-                </p>
-                <p>Author: <?= Html::encode($listing->book->author) ?></p>
-                <p class="listing-footer">
-                    <a class="btn btn-default" href="#">View &raquo;</a>
-                    <span class="price"><?= Html::encode($listing->price) ?> BGN</span>
-                </p>
+            <div class="col-lg-12 col-md-4 col-sm-6">
+                <?= $this->render('_listing_item', ['model' => $listing]) ?>
             </div>
         <?php endforeach; ?>
     </div>
